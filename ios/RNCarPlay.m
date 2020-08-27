@@ -389,11 +389,11 @@ RCT_EXPORT_METHOD(reactToSelectedResult:(BOOL)status) {
     if ([config objectForKey:@"guidanceBackgroundColor"]) {
         [mapTemplate setGuidanceBackgroundColor:[RCTConvert UIColor:config[@"guidanceBackgroundColor"]]];
     }
-    
+
     if ([config objectForKey:@"tripEstimateStyle"]) {
         [mapTemplate setTripEstimateStyle:[RCTConvert CPTripEstimateStyle:config[@"tripEstimateStyle"]]];
     }
-    
+
     if ([config objectForKey:@"mapButtons"]) {
         NSArray *mapButtons = [RCTConvert NSArray:config[@"mapButtons"]];
         NSMutableArray *result = [NSMutableArray array];
@@ -409,7 +409,7 @@ RCT_EXPORT_METHOD(reactToSelectedResult:(BOOL)status) {
     if ([config objectForKey:@"automaticallyHidesNavigationBar"]) {
         [mapTemplate setAutomaticallyHidesNavigationBar:[RCTConvert BOOL:config[@"automaticallyHidesNavigationBar"]]];
     }
-    
+
     if ([config objectForKey:@"hidesButtonsWithNavigationBar"]) {
         [mapTemplate setHidesButtonsWithNavigationBar:[RCTConvert BOOL:config[@"hidesButtonsWithNavigationBar"]]];
     }
@@ -417,6 +417,13 @@ RCT_EXPORT_METHOD(reactToSelectedResult:(BOOL)status) {
     if ([config objectForKey:@"render"]) {
         RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:self.bridge moduleName:templateId initialProperties:@{}];
         [rootView setFrame:store.window.frame];
+
+        if (rootView.subviews.count == 0) {
+          [[NSNotificationCenter defaultCenter] postNotificationName:RCTJavaScriptDidLoadNotification
+                                                              object:self.bridge
+                                                            userInfo:@{@"bridge":self.bridge}];
+        }
+
         [[store.window subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [store.window addSubview:rootView];
     }
@@ -509,25 +516,25 @@ RCT_EXPORT_METHOD(reactToSelectedResult:(BOOL)status) {
 
 - (CPManeuver*)parseManeuver:(NSDictionary*)json {
     CPManeuver* maneuver = [[CPManeuver alloc] init];
-    
+
     if ([json objectForKey:@"junctionImage"]) {
         [maneuver setJunctionImage:[RCTConvert UIImage:json[@"junctionImage"]]];
     }
-    
+
     if ([json objectForKey:@"initialTravelEstimates"]) {
         CPTravelEstimates* travelEstimates = [self parseTravelEstimates:json[@"initialTravelEstimates"]];
         [maneuver setInitialTravelEstimates:travelEstimates];
     }
-    
+
     if ([json objectForKey:@"symbolLight"] && [json objectForKey:@"symbolDark"]) {
         CPImageSet *symbolSet = [[CPImageSet alloc] initWithLightContentImage:[RCTConvert UIImage:json[@"symbolLight"]] darkContentImage:[RCTConvert UIImage:json[@"symbolDark"]]];
         [maneuver setSymbolSet:symbolSet];
     }
-    
+
     if ([json objectForKey:@"instructionVariants"]) {
         [maneuver setInstructionVariants:[RCTConvert NSStringArray:json[@"instructionVariants"]]];
     }
-    
+
     return maneuver;
 }
 
@@ -606,7 +613,7 @@ RCT_EXPORT_METHOD(reactToSelectedResult:(BOOL)status) {
                 break;
         }
     }
-    
+
     return @{
              @"todo": @(YES),
              @"reason": dismissalCtx
